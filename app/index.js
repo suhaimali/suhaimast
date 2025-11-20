@@ -160,18 +160,41 @@ export default function App() {
       <StatusBar barStyle="light-content" backgroundColor={Colors.primaryDark} />
       <LoadingOverlay visible={isLoading} />
       {renderContent()}
-      {drawerOpen && (<View style={styles.drawerOverlay}><TouchableOpacity style={{ flex: 1 }} onPress={() => setDrawerOpen(false)} /><View style={styles.drawer}><View style={styles.drawerHeader}><View style={styles.drawerHeaderContent}><View style={styles.avatarLarge}><Text style={styles.avatarText}>DM</Text></View><Text style={styles.drawerTitle}>{DOCTOR_NAME}</Text><Text style={styles.drawerSub}>Medical Admin</Text>
-        <View style={styles.drawerContactBox}>
-          <TouchableOpacity style={styles.drawerContactBtn} onPress={() => Linking.openURL(`tel:${DOCTOR_PHONE}`)}>
-            <FontAwesome5 name="phone-alt" size={14} color={Colors.primary} />
-            <Text style={styles.drawerContactText}>Call</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[styles.drawerContactBtn, { backgroundColor: Colors.whatsapp }]} onPress={() => Linking.openURL(`whatsapp://send?phone=${DOCTOR_WHATSAPP_NO}`)}>
-            <FontAwesome5 name="whatsapp" size={16} color="#FFF" />
-            <Text style={styles.drawerContactText}>WhatsApp</Text>
-          </TouchableOpacity>
+      {drawerOpen && (
+        <View style={styles.drawerOverlay}>
+          <TouchableOpacity style={{ flex: 1 }} onPress={() => setDrawerOpen(false)} />
+          <View style={styles.drawer}>
+            <View style={styles.drawerHeader}>
+              <View style={styles.drawerHeaderContent}>
+                <View style={styles.avatarLarge}><Text style={styles.avatarText}>DM</Text></View>
+                <Text style={styles.drawerTitle}>{DOCTOR_NAME}</Text>
+                <Text style={styles.drawerSub}>Medical Admin</Text>
+                <View style={styles.drawerContactBox}>
+                  <TouchableOpacity style={styles.drawerContactBtn} onPress={() => Linking.openURL(`tel:${DOCTOR_PHONE}`)}>
+                    <FontAwesome5 name="phone-alt" size={14} color={Colors.primary} />
+                    <Text style={styles.drawerContactText}>Call</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[styles.drawerContactBtn, { backgroundColor: Colors.whatsapp }]} onPress={() => Linking.openURL(`whatsapp://send?phone=${DOCTOR_WHATSAPP_NO}`)}>
+                    <FontAwesome5 name="whatsapp" size={16} color="#FFF" />
+                    <Text style={styles.drawerContactText}>WhatsApp</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+            <ScrollView style={{ paddingTop: 10 }}>
+              <DrawerItem icon="th-large" label="Dashboard" color={Colors.dash1} onPress={() => navigate(Screens.DASHBOARD)} />
+              <DrawerItem icon="users" label="Patients" color={Colors.dash2} onPress={() => navigate(Screens.PATIENT_LIST)} />
+              <DrawerItem icon="file-prescription" label="All Patient Rx History" color={Colors.primaryDark} onPress={() => navigate(Screens.ALL_RX_HISTORY)} />
+              <DrawerItem icon="file-medical-alt" label="Lab Reports" color={Colors.dash3} onPress={() => navigate(Screens.LAB_LIST)} />
+              <DrawerItem icon="band-aid" label="Procedures" color={Colors.dash6} onPress={() => navigate(Screens.PROCEDURES_HISTORY)} />
+              <DrawerItem icon="capsules" label="Inventory" color={Colors.dash4} onPress={() => navigate(Screens.INVENTORY)} />
+              <DrawerItem icon="file-signature" label="Manage Templates" color={Colors.dash5} onPress={() => navigate(Screens.TEMPLATE_MANAGER)} />
+              <View style={styles.divider} />
+              <DrawerItem icon="sign-out-alt" label="Logout" color={Colors.danger} onPress={() => setCurrentScreen(Screens.LOGIN)} />
+            </ScrollView>
+          </View>
         </View>
-      </View></View><ScrollView style={{ paddingTop: 10 }}><DrawerItem icon="th-large" label="Dashboard" color={Colors.dash1} onPress={() => navigate(Screens.DASHBOARD)} /><DrawerItem icon="users" label="Patients" color={Colors.dash2} onPress={() => navigate(Screens.PATIENT_LIST)} /><DrawerItem icon="file-prescription" label="All Patient Rx History" color={Colors.primaryDark} onPress={() => navigate(Screens.ALL_RX_HISTORY)} /> <DrawerItem icon="file-medical-alt" label="Lab Reports" color={Colors.dash3} onPress={() => navigate(Screens.LAB_LIST)} /><DrawerItem icon="band-aid" label="Procedures" color={Colors.dash6} onPress={() => navigate(Screens.PROCEDURES_HISTORY)} /><DrawerItem icon="capsules" label="Inventory" color={Colors.dash4} onPress={() => navigate(Screens.INVENTORY)} /><DrawerItem icon="file-signature" label="Manage Templates" color={Colors.dash5} onPress={() => navigate(Screens.TEMPLATE_MANAGER)} /><View style={styles.divider} /><DrawerItem icon="sign-out-alt" label="Logout" color={Colors.danger} onPress={() => setCurrentScreen(Screens.LOGIN)} /></ScrollView></View></View>)}
+      )}
     </SafeAreaView>
   );
 }
