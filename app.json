@@ -4,17 +4,20 @@
     "slug": "suhaimsoft",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/play_store_512.png",
+    "icon": "./assets/play_store_512.png",
     "scheme": "suhaimsoft",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "androidStatusBar": {
+      "backgroundColor": "#000000"
+    },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/play_store_512.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/ic_launcher_monochrome.png"
       },
@@ -31,12 +34,12 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
+          "backgroundColor": "#FFFFFF",
           "dark": {
-            "backgroundColor": "#000000"
+            "backgroundColor": "#FFFFFF"
           }
         }
       ]
@@ -44,6 +47,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "2e29d5c2-973d-42ae-904c-5d3773d4d6d1"
+      }
     }
   }
 }
