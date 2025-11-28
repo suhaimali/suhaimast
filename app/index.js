@@ -213,6 +213,7 @@ const AllPrescriptionHistoryScreen = ({ allPrescriptions, patients, navigate, on
         <Text style={styles.rxDate}>{item.date}</Text>
         <Text style={styles.rxDiagnosis}>{item.diagnosis}</Text>
         <Text style={{ fontSize: 12, color: Colors.text, fontWeight: 'bold' }}>{item.patientName}</Text>
+        {item.isTapering ? <Text style={styles.taperBadge}>Tapering</Text> : null}
       </View>
       <View style={{ flexDirection: 'row', alignItems: 'center' }}>
         <TouchableOpacity onPress={() => setViewRx(item)} style={[styles.iconBtn, { backgroundColor: Colors.action + '20' }]}>
@@ -364,7 +365,7 @@ const PrescriptionHistoryScreen = ({ patient, prescriptions, navigate, onDeleteR
   };
 
   const onDateChange = (event, selectedDate) => { setShowDatePicker(null); if (event.type === 'set' && selectedDate) { if (showDatePicker === 'start') setStartDate(selectedDate); else if (showDatePicker === 'end') setEndDate(selectedDate); } };
-  const RxTableItem = ({ item }) => (<View key={item.id} style={styles.rxTableItem}><View style={styles.rxTableCol}><Text style={styles.rxDate}>{item.date}</Text><Text style={styles.rxDiagnosis}>{item.diagnosis}</Text><Text style={{ fontSize: 12, color: Colors.subText }}>{item.medicines.length} Medicine(s) {item.templateName ? <Text>({item.templateName})</Text> : null}</Text></View><View style={{ flexDirection: 'row', alignItems: 'center' }}><TouchableOpacity onPress={() => setViewRx(item)} style={[styles.iconBtn, { backgroundColor: Colors.action + '20' }]}><FontAwesome5 name="eye" size={14} color={Colors.action} /></TouchableOpacity><TouchableOpacity onPress={() => onEditRx(item)} style={[styles.iconBtn, { marginLeft: 5, backgroundColor: Colors.primary + '20' }]}><FontAwesome5 name="pen" size={14} color={Colors.primary} /></TouchableOpacity><TouchableOpacity onPress={() => onDeleteRx(item.id)} style={[styles.iconBtn, { marginLeft: 5, backgroundColor: Colors.danger + '20' }]}><FontAwesome5 name="trash" size={14} color={Colors.danger} /></TouchableOpacity></View></View>);
+  const RxTableItem = ({ item }) => (<View key={item.id} style={styles.rxTableItem}><View style={styles.rxTableCol}><Text style={styles.rxDate}>{item.date}</Text><Text style={styles.rxDiagnosis}>{item.diagnosis}</Text><Text style={{ fontSize: 12, color: Colors.subText }}>{item.medicines.length} Medicine(s) {item.templateName ? <Text>({item.templateName})</Text> : null}</Text>{item.isTapering ? <Text style={styles.taperBadge}>Tapering</Text> : null}</View><View style={{ flexDirection: 'row', alignItems: 'center' }}><TouchableOpacity onPress={() => setViewRx(item)} style={[styles.iconBtn, { backgroundColor: Colors.action + '20' }]}><FontAwesome5 name="eye" size={14} color={Colors.action} /></TouchableOpacity><TouchableOpacity onPress={() => onEditRx(item)} style={[styles.iconBtn, { marginLeft: 5, backgroundColor: Colors.primary + '20' }]}><FontAwesome5 name="pen" size={14} color={Colors.primary} /></TouchableOpacity><TouchableOpacity onPress={() => onDeleteRx(item.id)} style={[styles.iconBtn, { marginLeft: 5, backgroundColor: Colors.danger + '20' }]}><FontAwesome5 name="trash" size={14} color={Colors.danger} /></TouchableOpacity></View></View>);
 
   return (<View style={styles.screenContainer}><Header title={`Rx History: ${patient.name}`} onBack={() => navigate(Screens.PATIENT_DETAILS, patient)} onAdd={() => navigate(Screens.ADD_RX, patient)} /><ScrollView contentContainerStyle={{ padding: 20 }}><Text style={styles.sectionTitleSmall}>Filter by Date</Text><View style={styles.row}><View style={{ flex: 1, marginRight: 10 }}><Text style={styles.label}>Start Date</Text><TouchableOpacity onPress={() => setShowDatePicker('start')} style={styles.pickerBtnSmall}><Text style={styles.pickerTextSmall}>{formattedStartDate}</Text></TouchableOpacity></View><View style={{ flex: 1 }}><Text style={styles.label}>End Date</Text><TouchableOpacity onPress={() => setShowDatePicker('end')} style={styles.pickerBtnSmall}><Text style={styles.pickerTextSmall}>{formattedEndDate}</Text></TouchableOpacity></View></View><TouchableOpacity style={[styles.btnSmall, { backgroundColor: Colors.action, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }]} onPress={handleExportPdf}><FontAwesome5 name="file-pdf" size={14} color="#FFF" style={{ marginRight: 10 }} /><Text style={{ color: '#FFF', fontWeight: 'bold' }}>EXPORT PDF</Text></TouchableOpacity>{showDatePicker ? <DateTimePicker value={showDatePicker === 'start' ? startDate : endDate} mode="date" display="default" onChange={onDateChange} maximumDate={new Date()} /> : null}
     <View style={styles.filterContainer}>
@@ -379,9 +380,31 @@ const NewPrescriptionForm = ({ patient, inventory, templates, onSave, onCancel, 
   const isEdit = !!initialData;
   const medicineNames = [...new Set(inventory.map(i => i.name))];
   const dosageForms = [...new Set(inventory.map(i => i.dosage))];
-  const [rxData, setRxData] = useState(initialData ? { ...initialData, vitals: initialData.vitals || patient.vitals || {}, templateId: initialData.templateId || 'template-none', proceduresPerformed: initialData.proceduresPerformed || [] } : { patientId: patient.id, diagnosis: '', notes: '', isTapering: false, vitals: patient?.vitals || {}, medicines: [], proceduresPerformed: [], templateId: 'template-none', });
+  const [rxData, setRxData] = useState(
+    initialData
+      ? {
+        ...initialData,
+        vitals: initialData.vitals || patient.vitals || {},
+        templateId: initialData.templateId || 'template-none',
+        proceduresPerformed: initialData.proceduresPerformed || [],
+        taperingPlan: initialData.taperingPlan || [],
+        isTapering: !!initialData.isTapering,
+      }
+      : {
+        patientId: patient.id,
+        diagnosis: '',
+        notes: '',
+        isTapering: false,
+        vitals: patient?.vitals || {},
+        medicines: [],
+        proceduresPerformed: [],
+        templateId: 'template-none',
+        taperingPlan: [],
+      }
+  );
   const [currentMed, setCurrentMed] = useState({ name: medicineNames[0] || '', strength: '', dosage: dosageForms[0] || 'Tablet', frequency: FREQUENCY_OPTIONS[0], duration: DURATION_OPTIONS[0], instructions: '' });
   const [currentProc, setCurrentProc] = useState({ name: '', cost: '' });
+  const [currentTaperStep, setCurrentTaperStep] = useState({ title: '', duration: '', dose: '' });
 
   useEffect(() => { if (isEdit) return; const selectedTemplate = templates.find(t => t.id === rxData.templateId); if (selectedTemplate && selectedTemplate.id !== 'template-none') { setRxData(prev => ({ ...prev, diagnosis: selectedTemplate.diagnosis, medicines: selectedTemplate.medicines.map(m => ({ ...m, id: 'med_' + Date.now() + Math.random() })) })); } else if (selectedTemplate && selectedTemplate.id === 'template-none') { setRxData(prev => ({ ...prev, diagnosis: '', medicines: [] })); } }, [rxData.templateId, templates, isEdit]);
 
@@ -413,11 +436,83 @@ const NewPrescriptionForm = ({ patient, inventory, templates, onSave, onCancel, 
     setCurrentProc({ name: '', cost: '' });
   };
   const handleRemoveProcedure = (id) => { setRxData(prev => ({ ...prev, proceduresPerformed: prev.proceduresPerformed.filter(p => p.id !== id) })); };
-  const handleFinalSave = () => { if (!rxData.diagnosis || rxData.medicines.length === 0) { Alert.alert("Incomplete Data", "Please enter a diagnosis and at least one medicine."); return; } const selectedTemplate = templates.find(t => t.id === rxData.templateId); onSave({ ...rxData, templateName: selectedTemplate?.name || 'Custom' }); };
+  const handleToggleTapering = () => {
+    setRxData(prev => ({
+      ...prev,
+      isTapering: !prev.isTapering,
+      taperingPlan: !prev.isTapering ? prev.taperingPlan : [],
+    }));
+  };
+  const handleAddTaperStep = () => {
+    if (!currentTaperStep.title || !currentTaperStep.duration || !currentTaperStep.dose) {
+      Alert.alert("Missing Fields", "Please add Stage, Duration and Dose.");
+      return;
+    }
+    setRxData(prev => ({
+      ...prev,
+      taperingPlan: [...prev.taperingPlan, { ...currentTaperStep, id: 'taper_' + Date.now() + Math.random() }],
+    }));
+    setCurrentTaperStep({ title: '', duration: '', dose: '' });
+  };
+  const handleRemoveTaperStep = (id) => {
+    setRxData(prev => ({ ...prev, taperingPlan: prev.taperingPlan.filter(step => step.id !== id) }));
+  };
+  const handleFinalSave = () => {
+    if (!rxData.diagnosis || rxData.medicines.length === 0) {
+      Alert.alert("Incomplete Data", "Please enter a diagnosis and at least one medicine.");
+      return;
+    }
+    if (rxData.isTapering && rxData.taperingPlan.length === 0) {
+      Alert.alert("Incomplete Taper Plan", "Add at least one tapering step or disable tapering.");
+      return;
+    }
+    const selectedTemplate = templates.find(t => t.id === rxData.templateId);
+    onSave({
+      ...rxData,
+      templateName: selectedTemplate?.name || 'Custom',
+      taperingPlan: rxData.isTapering ? rxData.taperingPlan : [],
+      isTapering: rxData.isTapering && rxData.taperingPlan.length > 0,
+    });
+  };
 
   return (<View style={styles.screenContainer}><Header title={`${isEdit ? 'Edit' : 'New'} Rx: ${patient.name}`} onBack={onCancel} /><ScrollView contentContainerStyle={{ padding: 20 }}><Text style={styles.sectionTitle}>Vitals (Latest)</Text><View style={styles.row}><VitalInputRx label="SpO2" unit="%" kbd="numeric" style={{ marginRight: 10 }} /><VitalInputRx label="BP" unit="mmHg" /></View><View style={styles.row}><VitalInputRx label="HR" unit="bpm" kbd="numeric" style={{ marginRight: 10 }} /><VitalInputRx label="Temp" unit="°F" kbd="numeric" /></View><VitalInputRx label="Weight" unit="kg" kbd="numeric" /><Text style={styles.sectionTitle}>Template & Notes</Text><Text style={styles.label}>Select Template</Text><View style={styles.pickerContainer}><Picker selectedValue={rxData.templateId} onValueChange={(v) => setRxData({ ...rxData, templateId: v })}>{templates.map(t => <Picker.Item key={t.id} label={t.name} value={t.id} />)}</Picker></View><Input label="Diagnosis" placeholder="e.g., UROLITHIASIS" value={rxData.diagnosis} onChange={(t) => setRxData({ ...rxData, diagnosis: t })} /><Input label="Doctor's Notes/Additional Instructions" value={rxData.notes} onChange={(t) => setRxData({ ...rxData, notes: t })} multiline={true} style={{ marginBottom: 20 }} />
 
     <Text style={styles.sectionTitle}>Prescribed Medicines (<Text>{rxData.medicines.length}</Text>)</Text>{rxData.medicines.map((med) => (<View key={med.id} style={styles.medCard}><View style={{ flex: 1 }}><Text style={styles.medName}>{med.name} - {med.strength}</Text><Text style={styles.medDetails}>{med.dosage} | {med.frequency} for {med.duration}</Text><Text style={styles.medInstructions}><FontAwesome5 name="clipboard" size={10} color={Colors.subText} /> <Text>{med.instructions}</Text></Text></View><TouchableOpacity onPress={() => handleRemoveMedicine(med.id)} style={[styles.iconBtn, { backgroundColor: Colors.danger + '20' }]}><FontAwesome5 name="trash-alt" size={14} color={Colors.danger} /></TouchableOpacity></View>))}<View style={[styles.addItemBox, { marginTop: 10 }]}><Text style={styles.subHeader}>Add New Medicine</Text><Text style={styles.label}>Medicine Name</Text><View style={styles.pickerContainer}><Picker selectedValue={currentMed.name} onValueChange={(v) => setCurrentMed({ ...currentMed, name: v })}>{medicineNames.map(name => <Picker.Item key={name} label={name} value={name} />)}</Picker></View><View style={styles.row}><Input style={{ flex: 1, marginRight: 10 }} label="Strength" placeholder="e.g., 500mg" value={currentMed.strength} onChange={(t) => setCurrentMed({ ...currentMed, strength: t })} /><View style={{ flex: 1 }}><Text style={styles.label}>Dosage Form</Text><View style={styles.pickerContainer}><Picker selectedValue={currentMed.dosage} onValueChange={(v) => setCurrentMed({ ...currentMed, dosage: v })} style={{ height: 40 }}>{dosageForms.map(f => <Picker.Item key={f} label={f} value={f} />)}</Picker></View></View></View><View style={styles.row}><View style={{ flex: 1, marginRight: 10 }}><Text style={styles.label}>Frequency</Text><View style={styles.pickerContainer}><Picker selectedValue={currentMed.frequency} onValueChange={(v) => setCurrentMed({ ...currentMed, frequency: v })} style={{ height: 40 }}>{FREQUENCY_OPTIONS.map(f => <Picker.Item key={f} label={f} value={f} />)}</Picker></View></View><View style={{ flex: 1 }}><Text style={styles.label}>Duration</Text><View style={styles.pickerContainer}><Picker selectedValue={currentMed.duration} onValueChange={(v) => setCurrentMed({ ...currentMed, duration: v })} style={{ height: 40 }}>{DURATION_OPTIONS.map(d => <Picker.Item key={d} label={d} value={d} />)}</Picker></View></View></View><Input label="Specific Instructions" placeholder="e.g., After food" value={currentMed.instructions} onChange={(t) => setCurrentMed({ ...currentMed, instructions: t })} /><TouchableOpacity style={[styles.btnSmall, { backgroundColor: Colors.action }]} onPress={handleAddMedicine}><Text style={{ color: '#FFF', fontWeight: 'bold' }}>ADD TO PRESCRIPTION</Text></TouchableOpacity></View>
+
+    <View style={styles.taperingHeader}>
+      <Text style={styles.sectionTitle}>Tapering Plan</Text>
+      <TouchableOpacity style={[styles.taperToggle, { backgroundColor: rxData.isTapering ? Colors.success : Colors.subText }]} onPress={handleToggleTapering}>
+        <FontAwesome5 name={rxData.isTapering ? "toggle-on" : "toggle-off"} size={22} color="#FFF" />
+        <Text style={styles.taperToggleText}>{rxData.isTapering ? 'Enabled' : 'Disabled'}</Text>
+      </TouchableOpacity>
+    </View>
+    <Text style={styles.taperingHint}>Use tapering when dose/frequency gradually changes over time.</Text>
+    {rxData.isTapering ? (
+      <>
+        {rxData.taperingPlan.length === 0 ? <Text style={styles.emptyText}>No tapering steps yet.</Text> : rxData.taperingPlan.map((step, idx) => (
+          <View key={step.id} style={styles.taperStepCard}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.taperStepTitle}>{idx + 1}. {step.title}</Text>
+              <Text style={styles.taperStepMeta}>{step.duration} • {step.dose}</Text>
+            </View>
+            <TouchableOpacity onPress={() => handleRemoveTaperStep(step.id)} style={[styles.iconBtn, { backgroundColor: Colors.danger + '20' }]}>
+              <FontAwesome5 name="trash" size={14} color={Colors.danger} />
+            </TouchableOpacity>
+          </View>
+        ))}
+        <View style={[styles.addItemBox, { marginTop: 10 }]}>
+          <Text style={styles.subHeader}>Add Tapering Step</Text>
+          <Input label="Stage / Instruction" placeholder="e.g., Week 1 - 1 tab BD" value={currentTaperStep.title} onChange={t => setCurrentTaperStep({ ...currentTaperStep, title: t })} />
+          <View style={styles.row}>
+            <Input style={{ flex: 1, marginRight: 10 }} label="Duration" placeholder="e.g., 7 days" value={currentTaperStep.duration} onChange={t => setCurrentTaperStep({ ...currentTaperStep, duration: t })} />
+            <Input style={{ flex: 1 }} label="Dose / Frequency" placeholder="e.g., 1 tab OD" value={currentTaperStep.dose} onChange={t => setCurrentTaperStep({ ...currentTaperStep, dose: t })} />
+          </View>
+          <TouchableOpacity style={[styles.btnSmall, { backgroundColor: Colors.dash6 }]} onPress={handleAddTaperStep}>
+            <Text style={{ color: '#FFF', fontWeight: 'bold' }}>ADD STEP</Text>
+          </TouchableOpacity>
+        </View>
+      </>
+    ) : null}
 
     <Text style={styles.sectionTitle}>Procedures Performed (<Text>{rxData.proceduresPerformed.length}</Text>)</Text>{rxData.proceduresPerformed.map((proc) => (<View key={proc.id} style={[styles.medCard, { borderLeftColor: Colors.dash6 }]}><View style={{ flex: 1 }}><Text style={styles.medName}>{proc.name}</Text><Text style={styles.medDetails}>Cost: <Text>₹{proc.cost}</Text></Text></View><TouchableOpacity onPress={() => handleRemoveProcedure(proc.id)} style={[styles.iconBtn, { backgroundColor: Colors.danger + '20' }]}><FontAwesome5 name="trash-alt" size={14} color={Colors.danger} /></TouchableOpacity></View>))}<View style={[styles.addItemBox, { marginTop: 10 }]}><Text style={styles.subHeader}>Add Procedure</Text><View style={styles.row}><Input style={{ flex: 2, marginRight: 10 }} label="Procedure Name" placeholder="e.g., Dressing" value={currentProc.name} onChange={t => setCurrentProc({ ...currentProc, name: t })} /><Input style={{ flex: 1 }} label="Cost (₹)" kbd="numeric" value={currentProc.cost} onChange={t => setCurrentProc({ ...currentProc, cost: t })} /></View><TouchableOpacity style={[styles.btnSmall, { backgroundColor: Colors.dash6 }]} onPress={handleAddProcedure}><Text style={{ color: '#FFF', fontWeight: 'bold' }}>ADD PROCEDURE</Text></TouchableOpacity></View>
 
@@ -502,6 +597,8 @@ const PrescriptionDetailModal = ({ rx, onClose }) => {
     <View key={med.id || index} style={styles.medDetailItem}><Text style={styles.medNameDetail}>{index + 1}. {med.name} {med.strength}</Text><Text style={styles.medDetailsDetail}>{med.dosage} | {med.frequency} for {med.duration}</Text><Text style={styles.medInstructionsDetail}>* {med.instructions}</Text></View>
   ))}{rx.proceduresPerformed && rx.proceduresPerformed.length > 0 ? (<><Text style={[styles.sectionTitleSmall, { marginTop: 10 }]}>Procedures</Text>{rx.proceduresPerformed.map((proc, index) => (
     <View key={proc.id || index} style={styles.medDetailItem}><Text style={styles.medNameDetail}>{proc.name} (Cost: ₹{proc.cost})</Text></View>
+  ))}</>) : null}{rx.isTapering && rx.taperingPlan && rx.taperingPlan.length > 0 ? (<><Text style={[styles.sectionTitleSmall, { marginTop: 10 }]}>Tapering Plan</Text>{rx.taperingPlan.map((step, index) => (
+    <View key={step.id || index} style={styles.medDetailItem}><Text style={styles.medNameDetail}>{index + 1}. {step.title}</Text><Text style={styles.medDetailsDetail}>{step.duration} • {step.dose}</Text></View>
   ))}</>) : null}{rx.notes ? (<><Text style={[styles.sectionTitleSmall, { marginTop: 10 }]}>Doctor's Notes</Text><Text style={styles.detailText}>{rx.notes}</Text></>) : null}</ScrollView><TouchableOpacity style={[styles.btnPrimary, { backgroundColor: Colors.subText, padding: 10, marginTop: 15 }]} onPress={onClose}><Text style={[styles.btnText, { fontSize: 14 }]}>CLOSE</Text></TouchableOpacity></View></View></Modal>);
 };
 
@@ -652,4 +749,12 @@ const styles = StyleSheet.create({
   filterButtonActive: { backgroundColor: Colors.primary },
   filterButtonText: { fontWeight: 'bold', color: Colors.primary },
   filterButtonTextActive: { color: '#FFF' },
+  taperingHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 20 },
+  taperToggle: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6, paddingHorizontal: 12, borderRadius: 20 },
+  taperToggleText: { color: '#FFF', fontWeight: 'bold', marginLeft: 8 },
+  taperingHint: { fontSize: 12, color: Colors.subText, marginTop: 5 },
+  taperStepCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FFF', padding: 12, borderRadius: 12, marginTop: 10, elevation: 2 },
+  taperStepTitle: { fontWeight: 'bold', color: Colors.text },
+  taperStepMeta: { fontSize: 12, color: Colors.subText, marginTop: 4 },
+  taperBadge: { marginTop: 6, alignSelf: 'flex-start', backgroundColor: Colors.warning + '33', color: Colors.warning, fontSize: 11, fontWeight: 'bold', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 12 },
 });

@@ -39,11 +39,19 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "2e29d5c2-973d-42ae-904c-5d3773d4d6d1"
+      }
+    },
+    "owner": "suhaimsoft"
   }
 }
