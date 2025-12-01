@@ -29,10 +29,25 @@ if (Platform.OS === 'android') {
 
 // --- COLORS ---
 const Colors = {
-  bg: '#F0F4F8', primary: '#009688', primaryDark: '#004D40', card: '#FFFFFF',
-  text: '#263238', subText: '#78909C', action: '#5C6BC0', danger: '#EF5350',
-  success: '#66BB6A', warning: '#FFA726', whatsapp: '#25D366', dash1: '#26A69A',
-  dash2: '#5C6BC0', dash3: '#FFA726', dash4: '#EC407A', dash5: '#6D4C41', dash6: '#6A1B9A',
+  // App-wide theme (more colorful & modern)
+  bg: '#F3F4F6',
+  primary: '#6366F1',
+  primaryDark: '#4F46E5',
+  card: '#FFFFFF',
+  text: '#111827',
+  subText: '#6B7280',
+  action: '#14B8A6',
+  danger: '#EF4444',
+  success: '#22C55E',
+  warning: '#F59E0B',
+  whatsapp: '#22C55E',
+  // Dashboard tile colors
+  dash1: '#6366F1', // Patients
+  dash2: '#0EA5E9', // Reports
+  dash3: '#F97316', // Medicine
+  dash4: '#EC4899', // Schedule
+  dash5: '#8B5CF6', // Templates
+  dash6: '#22C55E', // Procedures
 };
 
 // --- SCREENS DEFINITION ---
